@@ -99,7 +99,7 @@
               <button type='button' @click='toggleExpand(item)' :class="['flex w-full items-center justify-between gap-4 px-6 py-4 text-left transition', expandedId === item.id ? 'bg-ink text-paper' : 'hover:bg-paper']">
                 <div class='flex min-w-0 items-center gap-3'>
                   <span :class="['h-2 w-2 shrink-0', item.status === 'OK' ? (expandedId === item.id ? 'bg-paper' : 'bg-ink') : 'bg-signal']"></span>
-                  <p class='truncate text-sm font-semibold uppercase tracking-tight'>{{ item.Title || 'Uden titel' }}</p>
+                  <p class='truncate text-sm font-semibold uppercase tracking-tight'>{{ (currency === 'EUR' ? item.Title : (item.titleDA || item.Title)) || 'Uden titel' }}</p>
                 </div>
                 <div class='flex shrink-0 items-center gap-5'>
                   <span class='hidden font-mono text-sm font-bold tabular-nums sm:inline'>{{ currency === 'EUR' ? item.UnitPriceEUR : item.UnitPriceDKK }}</span>
@@ -206,6 +206,7 @@ interface Item {
   status?: string
   searchText?: string
   descDA?: string
+  titleDA?: string
   descLang?: string
 }
 
@@ -633,27 +634,42 @@ export default defineComponent({
     async function ensureTranslation(item: Item) {
       const id = item.id
       if (translations.value[id] !== undefined) return
-      if (item.descDA) {
+      if (item.descDA || item.titleDA) {
         if (item.descLang) sourceLangs.value = { ...sourceLangs.value, [id]: item.descLang }
-        translations.value = { ...translations.value, [id]: item.descDA }
+        if (item.descDA) translations.value = { ...translations.value, [id]: item.descDA }
         translationStatus.value = { ...translationStatus.value, [id]: 'done' }
         return
       }
-      const source = item.DonationMessage || item.ShortDescription || item.LongDescription || ''
-      if (!source) return
+      const descSource = item.DonationMessage || item.ShortDescription || item.LongDescription || ''
+      const titleSource = item.Title || ''
+      if (!descSource && !titleSource) return
       translationStatus.value = { ...translationStatus.value, [id]: 'translating' }
       try {
-        const src = await detectSourceLang(source)
+        const src = await detectSourceLang(descSource || titleSource)
         sourceLangs.value = { ...sourceLangs.value, [id]: src }
         const translator = await getTranslator(src)
-        const danish = translator ? await translator.translate(source) : await translateOnline(source, src)
-        applyTranslation(id, danish, item)
+        if (titleSource) {
+          item.titleDA = translator ? await translator.translate(titleSource) : await translateOnline(titleSource, src)
+        }
+        if (descSource) {
+          const danish = translator ? await translator.translate(descSource) : await translateOnline(descSource, src)
+          applyTranslation(id, danish, item)
+        } else {
+          translationStatus.value = { ...translationStatus.value, [id]: 'done' }
+          persist()
+        }
       } catch (error) {
         void error
         try {
           const src = sourceLangs.value[id] || 'en'
-          const danish = await translateOnline(source, src)
-          applyTranslation(id, danish, item)
+          if (titleSource && !item.titleDA) item.titleDA = await translateOnline(titleSource, src)
+          if (descSource) {
+            const danish = await translateOnline(descSource, src)
+            applyTranslation(id, danish, item)
+          } else {
+            translationStatus.value = { ...translationStatus.value, [id]: 'done' }
+            persist()
+          }
         } catch (fallbackError) {
           void fallbackError
           translationStatus.value = { ...translationStatus.value, [id]: 'unavailable' }
