@@ -303,6 +303,7 @@ export default defineComponent({
         if (snapshot) {
           items.value = snapshot.items as Item[]
           themes.value = snapshot.themes as Theme[]
+          void translateAll()
         }
         cloudStatus.value = 'Hentet'
       } catch (error) {
@@ -633,46 +634,44 @@ export default defineComponent({
 
     async function ensureTranslation(item: Item) {
       const id = item.id
-      if (translations.value[id] !== undefined) return
-      if (item.descDA || item.titleDA) {
+      if (item.descDA && translations.value[id] === undefined) {
         if (item.descLang) sourceLangs.value = { ...sourceLangs.value, [id]: item.descLang }
-        if (item.descDA) translations.value = { ...translations.value, [id]: item.descDA }
+        translations.value = { ...translations.value, [id]: item.descDA }
         translationStatus.value = { ...translationStatus.value, [id]: 'done' }
-        return
       }
       const descSource = item.DonationMessage || item.ShortDescription || item.LongDescription || ''
       const titleSource = item.Title || ''
-      if (!descSource && !titleSource) return
-      translationStatus.value = { ...translationStatus.value, [id]: 'translating' }
+      const needDesc = Boolean(descSource) && !item.descDA
+      const needTitle = Boolean(titleSource) && !item.titleDA
+      if (!needDesc && !needTitle) return
+      if (needDesc) translationStatus.value = { ...translationStatus.value, [id]: 'translating' }
       try {
-        const src = await detectSourceLang(descSource || titleSource)
+        const src = item.descLang || sourceLangs.value[id] || (await detectSourceLang(descSource || titleSource))
         sourceLangs.value = { ...sourceLangs.value, [id]: src }
         const translator = await getTranslator(src)
-        if (titleSource) {
+        if (needTitle) {
           item.titleDA = translator ? await translator.translate(titleSource) : await translateOnline(titleSource, src)
         }
-        if (descSource) {
+        if (needDesc) {
           const danish = translator ? await translator.translate(descSource) : await translateOnline(descSource, src)
           applyTranslation(id, danish, item)
         } else {
-          translationStatus.value = { ...translationStatus.value, [id]: 'done' }
           persist()
         }
       } catch (error) {
         void error
         try {
           const src = sourceLangs.value[id] || 'en'
-          if (titleSource && !item.titleDA) item.titleDA = await translateOnline(titleSource, src)
-          if (descSource) {
+          if (needTitle && !item.titleDA) item.titleDA = await translateOnline(titleSource, src)
+          if (needDesc) {
             const danish = await translateOnline(descSource, src)
             applyTranslation(id, danish, item)
           } else {
-            translationStatus.value = { ...translationStatus.value, [id]: 'done' }
             persist()
           }
         } catch (fallbackError) {
           void fallbackError
-          translationStatus.value = { ...translationStatus.value, [id]: 'unavailable' }
+          if (needDesc) translationStatus.value = { ...translationStatus.value, [id]: 'unavailable' }
         }
       }
     }
