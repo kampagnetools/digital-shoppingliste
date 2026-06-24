@@ -475,10 +475,13 @@ export default defineComponent({
     }
 
     const filteredItems = computed(() => {
+      const query = searchText.value.trim().toLowerCase()
       return items.value.filter((item) => {
-        const matchesSearch = searchText.value
-          ? (item.searchText ?? '').includes(searchText.value.toLowerCase())
-          : true
+        const matchesSearch =
+          !query ||
+          (item.searchText ?? '').includes(query) ||
+          (item.titleDA ?? '').toLowerCase().includes(query) ||
+          (item.descDA ?? '').toLowerCase().includes(query)
         if (!matchesSearch) return false
         const hasPriceFilter = filterMin.value !== null || filterMax.value !== null
         const unitPrice = currency.value === 'EUR' ? item.UnitPriceValue : item.UnitPriceDKKValue
