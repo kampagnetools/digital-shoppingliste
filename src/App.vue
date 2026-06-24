@@ -36,19 +36,19 @@
             </div>
             <button type='button' class='shrink-0 mono-label text-paper sm:hidden' @click='menuOpen = !menuOpen'>{{ menuOpen ? '✕ Luk' : '☰ Menu' }}</button>
           </div>
-          <div :class="[menuOpen ? 'flex' : 'hidden', 'flex-wrap items-stretch border-t-2 border-ink sm:flex sm:flex-nowrap sm:border-t-0']">
-            <label class='flex flex-1 cursor-pointer items-center justify-center gap-2 border-l-0 border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper sm:flex-none sm:border-l'>
+          <div class='hidden items-stretch sm:flex sm:flex-nowrap'>
+            <label class='flex cursor-pointer items-center gap-2 border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper'>
               <span aria-hidden='true'>↑</span>
               <span>{{ items.length ? 'Importér igen' : 'Importér CSV' }}</span>
               <input type='file' accept='.csv' @change='onFileChange' class='sr-only' />
             </label>
-            <button class='flex-1 border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper sm:flex-none' @click='resetFilters'>Ryd filtre</button>
-            <button v-if='cloudConfigured && userEmail' class='flex-1 border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper sm:flex-none' @click='logout'>Log ud</button>
+            <button class='border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper' @click='resetFilters'>Ryd filtre</button>
+            <button v-if='cloudConfigured && userEmail' class='border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper' @click='logout'>Log ud</button>
             <button type='button' :title="isDark ? 'Skift til lys' : 'Skift til mørk'" :aria-label="isDark ? 'Skift til lys' : 'Skift til mørk'" class='flex items-center justify-center border-l border-ink bg-paper px-4 py-4 text-sm leading-none transition hover:bg-ink hover:text-paper' @click='toggleDark'>{{ isDark ? '☀' : '☾' }}</button>
           </div>
         </div>
 
-        <div :class="[menuOpen ? 'flex' : 'hidden', 'flex-col border-t-2 border-ink sm:flex lg:flex-row lg:items-stretch']">
+        <div class='hidden border-t-2 border-ink sm:flex sm:flex-col lg:flex-row lg:items-stretch'>
           <div class='flex flex-1 items-center gap-3 px-5 py-4 lg:py-2.5'>
             <span class='mono-label text-muted'>Søg</span>
             <input type='text' v-model='searchText' placeholder='Titel eller beskrivelse…' class='w-full bg-transparent font-mono text-sm text-ink placeholder:text-muted' />
@@ -65,6 +65,36 @@
             <button type='button' :class="['flex-1 px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'DKK' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'DKK'">DK/DKK</button>
             <button type='button' :class="['flex-1 border-l border-ink px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'EUR' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'EUR'">EN/EUR</button>
           </div>
+        </div>
+
+        <div class='flex items-center gap-3 border-t-2 border-ink px-5 py-4 sm:hidden'>
+          <span class='mono-label text-muted'>Søg</span>
+          <input type='text' v-model='searchText' placeholder='Titel eller beskrivelse…' class='w-full bg-transparent font-mono text-base text-ink placeholder:text-muted' />
+        </div>
+
+        <div v-show='menuOpen' class='sm:hidden'>
+          <div class='grid grid-cols-2 gap-px border-t-2 border-ink bg-ink'>
+            <label class='flex items-center justify-between gap-2 bg-paper px-5 py-4'>
+              <span class='mono-label text-muted'>Min pris</span>
+              <input type='number' v-model.number='filterMin' placeholder='—' class='w-20 bg-transparent text-right font-mono text-base tabular-nums text-ink placeholder:text-muted' />
+            </label>
+            <label class='flex items-center justify-between gap-2 bg-paper px-5 py-4'>
+              <span class='mono-label text-muted'>Max pris</span>
+              <input type='number' v-model.number='filterMax' placeholder='—' class='w-20 bg-transparent text-right font-mono text-base tabular-nums text-ink placeholder:text-muted' />
+            </label>
+          </div>
+          <div class='grid grid-cols-2 gap-px border-t border-ink bg-ink'>
+            <button type='button' :class="['px-4 py-4 mono-label transition', currency === 'DKK' ? 'bg-ink text-paper' : 'bg-paper active:bg-ink active:text-paper']" @click="currency = 'DKK'">DK / DKK</button>
+            <button type='button' :class="['px-4 py-4 mono-label transition', currency === 'EUR' ? 'bg-ink text-paper' : 'bg-paper active:bg-ink active:text-paper']" @click="currency = 'EUR'">EN / EUR</button>
+          </div>
+          <label class='flex cursor-pointer items-center gap-3 border-t-2 border-ink bg-paper px-5 py-4 mono-label active:bg-ink active:text-paper'>
+            <span aria-hidden='true'>↑</span>
+            <span>{{ items.length ? 'Importér igen' : 'Importér CSV' }}</span>
+            <input type='file' accept='.csv' @change='onFileChange' class='sr-only' />
+          </label>
+          <button type='button' class='block w-full border-t border-ink bg-paper px-5 py-4 text-left mono-label active:bg-ink active:text-paper' @click='resetFilters'>Ryd filtre</button>
+          <button type='button' class='block w-full border-t border-ink bg-paper px-5 py-4 text-left mono-label active:bg-ink active:text-paper' @click='toggleDark'>{{ isDark ? '☀ Lys tilstand' : '☾ Mørk tilstand' }}</button>
+          <button v-if='cloudConfigured && userEmail' type='button' class='block w-full border-t border-ink bg-paper px-5 py-4 text-left mono-label active:bg-ink active:text-paper' @click='logout'>Log ud</button>
         </div>
        </div>
       </div>
