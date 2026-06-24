@@ -27,25 +27,28 @@
     <nav class='sticky top-0 z-30'>
       <div class='mx-auto max-w-[1600px] px-5 pt-5 sm:px-8 lg:px-12'>
        <div class='border-2 border-ink bg-paper shadow-[7px_7px_0_0_var(--color-ink)]'>
-        <div class='flex flex-col gap-px sm:flex-row sm:items-stretch sm:justify-between sm:gap-0'>
-          <div class='flex items-center gap-3 border-b-2 border-ink bg-ink px-5 py-4 text-paper sm:flex-1 sm:border-b-0 sm:border-r-2'>
-            <span class='h-4 w-4 bg-signal'></span>
-            <span class='text-sm font-bold uppercase tracking-wide'>Digital shoppingliste</span>
-            <span v-if='cloudConfigured && userEmail' class='mono-label opacity-60'>· {{ userEmail }}</span>
+        <div class='flex flex-col sm:flex-row sm:items-stretch sm:justify-between'>
+          <div class='flex items-center justify-between gap-3 border-b-2 border-ink bg-ink px-5 py-4 text-paper sm:flex-1 sm:border-b-0 sm:border-r-2'>
+            <div class='flex min-w-0 items-center gap-3'>
+              <span class='h-4 w-4 shrink-0 bg-signal'></span>
+              <span class='truncate text-sm font-bold uppercase tracking-wide'>Digital shoppingliste</span>
+              <span v-if='cloudConfigured && userEmail' class='hidden truncate mono-label opacity-60 lg:inline'>· {{ userEmail }}</span>
+            </div>
+            <button type='button' class='shrink-0 mono-label text-paper sm:hidden' @click='menuOpen = !menuOpen'>{{ menuOpen ? '✕ Luk' : '☰ Menu' }}</button>
           </div>
-          <div class='flex flex-wrap items-stretch border-t border-ink sm:flex-nowrap sm:border-t-0'>
-            <label class='flex cursor-pointer items-center gap-2 border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper'>
+          <div :class="[menuOpen ? 'flex' : 'hidden', 'flex-wrap items-stretch border-t-2 border-ink sm:flex sm:flex-nowrap sm:border-t-0']">
+            <label class='flex flex-1 cursor-pointer items-center justify-center gap-2 border-l-0 border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper sm:flex-none sm:border-l'>
               <span aria-hidden='true'>↑</span>
               <span>{{ items.length ? 'Importér igen' : 'Importér CSV' }}</span>
               <input type='file' accept='.csv' @change='onFileChange' class='sr-only' />
             </label>
-            <button class='border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper' @click='resetFilters'>Ryd filtre</button>
-            <button v-if='cloudConfigured && userEmail' class='border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper' @click='logout'>Log ud</button>
+            <button class='flex-1 border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper sm:flex-none' @click='resetFilters'>Ryd filtre</button>
+            <button v-if='cloudConfigured && userEmail' class='flex-1 border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper sm:flex-none' @click='logout'>Log ud</button>
             <button type='button' :title="isDark ? 'Skift til lys' : 'Skift til mørk'" :aria-label="isDark ? 'Skift til lys' : 'Skift til mørk'" class='flex items-center justify-center border-l border-ink bg-paper px-4 py-4 text-sm leading-none transition hover:bg-ink hover:text-paper' @click='toggleDark'>{{ isDark ? '☀' : '☾' }}</button>
           </div>
         </div>
 
-        <div class='flex flex-col border-t-2 border-ink lg:flex-row lg:items-stretch'>
+        <div :class="[menuOpen ? 'flex' : 'hidden', 'flex-col border-t-2 border-ink sm:flex lg:flex-row lg:items-stretch']">
           <div class='flex flex-1 items-center gap-3 px-5 py-4 lg:py-2.5'>
             <span class='mono-label text-muted'>Søg</span>
             <input type='text' v-model='searchText' placeholder='Titel eller beskrivelse…' class='w-full bg-transparent font-mono text-sm text-ink placeholder:text-muted' />
@@ -58,13 +61,9 @@
             <span class='mono-label text-muted'>Max</span>
             <input type='number' v-model.number='filterMax' placeholder='—' class='w-20 bg-transparent text-right font-mono text-sm tabular-nums text-ink placeholder:text-muted lg:text-left' />
           </div>
-          <div class='flex items-center justify-between gap-2 border-t border-ink px-5 py-4 lg:w-36 lg:justify-start lg:border-l lg:border-t-0 lg:py-2.5'>
-            <span class='mono-label text-muted'>Eksakt</span>
-            <input type='number' v-model.number='filterExact' placeholder='—' class='w-20 bg-transparent text-right font-mono text-sm tabular-nums text-ink placeholder:text-muted lg:text-left' />
-          </div>
           <div class='flex items-stretch border-t border-ink lg:border-l lg:border-t-0'>
-            <button type='button' :class="['px-4 py-4 mono-label transition lg:py-2.5', currency === 'DKK' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'DKK'">DK/DKK</button>
-            <button type='button' :class="['border-l border-ink px-4 py-4 mono-label transition lg:py-2.5', currency === 'EUR' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'EUR'">EN/EUR</button>
+            <button type='button' :class="['flex-1 px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'DKK' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'DKK'">DK/DKK</button>
+            <button type='button' :class="['flex-1 border-l border-ink px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'EUR' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'EUR'">EN/EUR</button>
           </div>
         </div>
        </div>
@@ -102,7 +101,7 @@
                   <p class='truncate text-sm font-semibold uppercase tracking-tight'>{{ (currency === 'EUR' ? item.Title : (item.titleDA || item.Title)) || 'Uden titel' }}</p>
                 </div>
                 <div class='flex shrink-0 items-center gap-5'>
-                  <span class='hidden font-mono text-sm font-bold tabular-nums sm:inline'>{{ currency === 'EUR' ? item.UnitPriceEUR : item.UnitPriceDKK }}</span>
+                  <span class='hidden cursor-pointer font-mono text-sm font-bold tabular-nums hover:text-signal sm:inline' title='Klik for at kopiere' @click.stop="copyText(currency === 'EUR' ? item.UnitPriceEUR : item.UnitPriceDKK)">{{ currency === 'EUR' ? item.UnitPriceEUR : item.UnitPriceDKK }}</span>
                   <span :class="['mono-label', expandedId === item.id ? 'text-paper' : 'text-muted']">{{ expandedId === item.id ? 'Luk −' : 'Læs mere +' }}</span>
                 </div>
               </button>
@@ -110,7 +109,7 @@
               <div v-if='expandedId === item.id' class='border-t border-ink/15 bg-paper px-6 py-5'>
                 <div class='border border-ink bg-paper px-4 py-3'>
                   <span class='mono-label text-muted'>{{ currency === 'EUR' ? ('Original — ' + (sourceLangs[item.id] ? sourceLangs[item.id].toUpperCase() : 'EN/DE')) : 'Beskrivelse — DK' }}</span>
-                  <p class='mt-2 font-mono text-sm leading-7'>
+                  <p class='mt-2 cursor-pointer font-mono text-sm leading-7 hover:text-signal' title='Klik for at kopiere' @click="copyText(currency === 'EUR' ? descText(item) : translations[item.id])">
                     <template v-if="currency === 'EUR'">{{ descText(item) }}</template>
                     <template v-else-if='translations[item.id]'>{{ translations[item.id] }}</template>
                     <span v-else-if='translationStatus[item.id] === "translating"' class='text-muted'>Oversætter…</span>
@@ -121,15 +120,15 @@
                 <div class='mt-5 grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-4'>
                   <div class='bg-paper px-4 py-3'>
                     <span class='mono-label text-muted'>Enhedspris</span>
-                    <span class='mt-1 block font-mono text-sm font-bold tabular-nums'>{{ currency === 'EUR' ? item.UnitPriceEUR : item.UnitPriceDKK }}</span>
+                    <span class='mt-1 block cursor-pointer font-mono text-sm font-bold tabular-nums hover:text-signal' title='Klik for at kopiere' @click="copyText(currency === 'EUR' ? item.UnitPriceEUR : item.UnitPriceDKK)">{{ currency === 'EUR' ? item.UnitPriceEUR : item.UnitPriceDKK }}</span>
                   </div>
                   <div class='bg-paper px-4 py-3'>
                     <span class='mono-label text-muted'>Antal</span>
-                    <span class='mt-1 block font-mono text-sm font-bold tabular-nums'>{{ (item.QuantityValue ?? item.Quantity) || '—' }}</span>
+                    <span class='mt-1 block cursor-pointer font-mono text-sm font-bold tabular-nums hover:text-signal' title='Klik for at kopiere' @click="copyText((item.QuantityValue ?? item.Quantity) || '')">{{ (item.QuantityValue ?? item.Quantity) || '—' }}</span>
                   </div>
                   <div class='bg-paper px-4 py-3'>
                     <span class='mono-label text-muted'>Samlet</span>
-                    <span class='mt-1 block font-mono text-sm font-bold tabular-nums'>{{ currency === 'EUR' ? item.TotalPriceEUR : item.TotalPriceDKK }}</span>
+                    <span class='mt-1 block cursor-pointer font-mono text-sm font-bold tabular-nums hover:text-signal' title='Klik for at kopiere' @click="copyText(currency === 'EUR' ? item.TotalPriceEUR : item.TotalPriceDKK)">{{ currency === 'EUR' ? item.TotalPriceEUR : item.TotalPriceDKK }}</span>
                   </div>
                   <div class='bg-paper px-4 py-3'>
                     <span class='mono-label text-muted'>Status</span>
@@ -154,6 +153,8 @@
         </section>
       </main>
     </div>
+
+    <div v-if='toast' class='fixed bottom-6 left-1/2 z-50 -translate-x-1/2 border-2 border-ink bg-ink px-5 py-3 mono-label text-paper shadow-[4px_4px_0_0_var(--color-paper)]'>{{ toast }}</div>
     </template>
   </div>
 </template>
@@ -285,10 +286,12 @@ export default defineComponent({
     const themes = ref<Theme[]>([])
     const activeThemeId = ref<string | null>(null)
     const searchText = ref('')
-    const filterExact = ref<number | null>(null)
     const filterMin = ref<number | null>(null)
     const filterMax = ref<number | null>(null)
     const currency = ref<'DKK' | 'EUR'>('DKK')
+    const menuOpen = ref(false)
+    const toast = ref('')
+    let toastTimer: ReturnType<typeof setTimeout> | null = null
     const newThemeName = ref('')
     const currentPage = ref(1)
     const itemsPerPage = 10
@@ -442,12 +445,9 @@ export default defineComponent({
           ? (item.searchText ?? '').includes(searchText.value.toLowerCase())
           : true
         if (!matchesSearch) return false
-        const hasPriceFilter = filterExact.value !== null || filterMin.value !== null || filterMax.value !== null
+        const hasPriceFilter = filterMin.value !== null || filterMax.value !== null
         const unitPrice = currency.value === 'EUR' ? item.UnitPriceValue : item.UnitPriceDKKValue
         if (hasPriceFilter && (unitPrice === null || unitPrice === undefined)) return false
-        if (filterExact.value !== null) {
-          return unitPrice === filterExact.value
-        }
         const minOK = filterMin.value === null ? true : (unitPrice as number) >= filterMin.value
         const maxOK = filterMax.value === null ? true : (unitPrice as number) <= filterMax.value
         return minOK && maxOK
@@ -470,7 +470,6 @@ export default defineComponent({
 
     function resetFilters() {
       searchText.value = ''
-      filterExact.value = null
       filterMin.value = null
       filterMax.value = null
       currentPage.value = 1
@@ -604,7 +603,7 @@ export default defineComponent({
         }
         return formatDkkInline(euros * rate)
       }
-      let result = text.replace(/(?:€|EUR)\s?(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)\s?(?:€|EUR|euros?)/gi, (match, before, after) => {
+      let result = text.replace(/(?:€|EUR\b)\s?(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)\s?(?:€|euros?(?![a-zæøåA-ZÆØÅ])|EUR(?![a-zæøåA-ZÆØÅ]))/gi, (match, before, after) => {
         const value = cleanNumber(before ?? after)
         if (value === null || !Number.isFinite(value)) return match
         return dkk(value)
@@ -690,6 +689,23 @@ export default defineComponent({
 
     function toggleThemesMenu() {
       themesMenuOpen.value = !themesMenuOpen.value
+    }
+
+    function showToast(message: string) {
+      toast.value = message
+      if (toastTimer) clearTimeout(toastTimer)
+      toastTimer = setTimeout(() => {
+        toast.value = ''
+      }, 1400)
+    }
+
+    function copyText(value: unknown) {
+      const text = value == null ? '' : String(value).trim()
+      if (!text) return
+      navigator.clipboard
+        .writeText(text)
+        .then(() => showToast('Kopieret'))
+        .catch(() => showToast('Kunne ikke kopiere'))
     }
 
     function applyDark() {
@@ -824,8 +840,10 @@ export default defineComponent({
       translationStatus,
       sourceLangs,
       descText,
+      copyText,
+      toast,
+      menuOpen,
       searchText,
-      filterExact,
       filterMin,
       filterMax,
       currency,
