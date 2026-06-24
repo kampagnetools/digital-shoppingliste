@@ -54,35 +54,37 @@
             <span class='mono-label text-muted'>Søg</span>
             <input type='text' v-model='searchText' placeholder='Titel eller beskrivelse…' class='w-full bg-transparent font-mono text-sm text-ink placeholder:text-muted' />
             <button v-if='searchText' type='button' class='shrink-0 mono-label text-muted transition hover:text-signal' title='Ryd søgning' @click="searchText = ''">✕</button>
+            <span class='shrink-0 mono-label text-muted'>{{ filteredItems.length }} / {{ items.length }}</span>
           </div>
-          <div class='flex items-center justify-between gap-2 border-t border-ink px-5 py-4 lg:w-36 lg:justify-start lg:border-l lg:border-t-0 lg:py-2.5'>
-            <span class='mono-label text-muted'>Min</span>
+          <div :class="['flex items-center justify-between gap-2 border-t border-ink px-5 py-4 lg:w-36 lg:justify-start lg:border-l lg:border-t-0 lg:py-2.5', filterMin !== null ? 'bg-signal/10' : '']">
+            <span :class="['mono-label', filterMin !== null ? 'text-signal' : 'text-muted']">Min</span>
             <input type='number' v-model.number='filterMin' placeholder='—' class='w-20 bg-transparent text-right font-mono text-sm tabular-nums text-ink placeholder:text-muted lg:text-left' />
           </div>
-          <div class='flex items-center justify-between gap-2 border-t border-ink px-5 py-4 lg:w-36 lg:justify-start lg:border-l lg:border-t-0 lg:py-2.5'>
-            <span class='mono-label text-muted'>Max</span>
+          <div :class="['flex items-center justify-between gap-2 border-t border-ink px-5 py-4 lg:w-36 lg:justify-start lg:border-l lg:border-t-0 lg:py-2.5', filterMax !== null ? 'bg-signal/10' : '']">
+            <span :class="['mono-label', filterMax !== null ? 'text-signal' : 'text-muted']">Max</span>
             <input type='number' v-model.number='filterMax' placeholder='—' class='w-20 bg-transparent text-right font-mono text-sm tabular-nums text-ink placeholder:text-muted lg:text-left' />
           </div>
-          <div class='flex items-center border-t border-ink lg:border-l lg:border-t-0'>
-            <span class='mono-label hidden px-4 text-muted lg:inline'>Vis</span>
-            <button type='button' :class="['flex-1 self-stretch border-l border-ink px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'DKK' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'DKK'">DK/DKK</button>
-            <button type='button' :class="['flex-1 self-stretch border-l border-ink px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'EUR' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'EUR'">EN/EUR</button>
+          <div class='flex items-stretch border-t border-ink lg:border-l lg:border-t-0'>
+            <button type='button' :class="['flex-1 px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'DKK' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'DKK'">DK/DKK</button>
+            <button type='button' :class="['flex-1 border-l border-ink px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'EUR' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'EUR'">EN/EUR</button>
           </div>
         </div>
 
         <div class='flex items-center gap-3 border-t-2 border-ink px-5 py-4 sm:hidden'>
-          <span class='mono-label text-muted'>Søg</span>
-          <input type='text' v-model='searchText' placeholder='Titel eller beskrivelse…' class='w-full bg-transparent font-mono text-base text-ink placeholder:text-muted' />
+          <span aria-hidden='true' class='text-muted'>⌕</span>
+          <input type='text' v-model='searchText' placeholder='Søg titel eller beskrivelse…' class='w-full bg-transparent font-mono text-base text-ink placeholder:text-muted' />
+          <button v-if='searchText' type='button' class='shrink-0 mono-label text-muted' title='Ryd' @click="searchText = ''">✕</button>
+          <span class='shrink-0 mono-label text-muted'>{{ filteredItems.length }} / {{ items.length }}</span>
         </div>
 
         <div v-show='menuOpen' class='sm:hidden'>
           <div class='grid grid-cols-2 gap-px border-t-2 border-ink bg-ink'>
-            <label class='flex items-center justify-between gap-2 bg-paper px-5 py-4'>
-              <span class='mono-label text-muted'>Min pris</span>
+            <label :class="['flex items-center justify-between gap-2 px-5 py-4', filterMin !== null ? 'bg-signal/10' : 'bg-paper']">
+              <span :class="['mono-label', filterMin !== null ? 'text-signal' : 'text-muted']">Min pris</span>
               <input type='number' v-model.number='filterMin' placeholder='—' class='w-20 bg-transparent text-right font-mono text-base tabular-nums text-ink placeholder:text-muted' />
             </label>
-            <label class='flex items-center justify-between gap-2 bg-paper px-5 py-4'>
-              <span class='mono-label text-muted'>Max pris</span>
+            <label :class="['flex items-center justify-between gap-2 px-5 py-4', filterMax !== null ? 'bg-signal/10' : 'bg-paper']">
+              <span :class="['mono-label', filterMax !== null ? 'text-signal' : 'text-muted']">Max pris</span>
               <input type='number' v-model.number='filterMax' placeholder='—' class='w-20 bg-transparent text-right font-mono text-base tabular-nums text-ink placeholder:text-muted' />
             </label>
           </div>
