@@ -42,7 +42,7 @@
               <span>{{ items.length ? 'Importér igen' : 'Importér CSV' }}</span>
               <input type='file' accept='.csv' @change='onFileChange' class='sr-only' />
             </label>
-            <button class='border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper' @click='resetFilters'>Ryd filtre</button>
+            <button :disabled='!hasActiveFilters' class='border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper disabled:bg-paper disabled:text-muted disabled:opacity-50 disabled:hover:bg-paper disabled:hover:text-muted' @click='resetFilters'>Ryd filtre</button>
             <button v-if='cloudConfigured && userEmail' class='border-l border-ink bg-paper px-5 py-4 mono-label transition hover:bg-ink hover:text-paper' @click='logout'>Log ud</button>
             <button type='button' :title="isDark ? 'Skift til lys' : 'Skift til mørk'" :aria-label="isDark ? 'Skift til lys' : 'Skift til mørk'" class='flex items-center justify-center border-l border-ink bg-paper px-4 py-4 text-sm leading-none transition hover:bg-ink hover:text-paper' @click='toggleDark'>{{ isDark ? '☀' : '☾' }}</button>
           </div>
@@ -50,8 +50,10 @@
 
         <div class='hidden border-t-2 border-ink sm:flex sm:flex-col lg:flex-row lg:items-stretch'>
           <div class='flex flex-1 items-center gap-3 px-5 py-4 lg:py-2.5'>
+            <span aria-hidden='true' class='text-muted'>⌕</span>
             <span class='mono-label text-muted'>Søg</span>
             <input type='text' v-model='searchText' placeholder='Titel eller beskrivelse…' class='w-full bg-transparent font-mono text-sm text-ink placeholder:text-muted' />
+            <button v-if='searchText' type='button' class='shrink-0 mono-label text-muted transition hover:text-signal' title='Ryd søgning' @click="searchText = ''">✕</button>
           </div>
           <div class='flex items-center justify-between gap-2 border-t border-ink px-5 py-4 lg:w-36 lg:justify-start lg:border-l lg:border-t-0 lg:py-2.5'>
             <span class='mono-label text-muted'>Min</span>
@@ -61,9 +63,10 @@
             <span class='mono-label text-muted'>Max</span>
             <input type='number' v-model.number='filterMax' placeholder='—' class='w-20 bg-transparent text-right font-mono text-sm tabular-nums text-ink placeholder:text-muted lg:text-left' />
           </div>
-          <div class='flex items-stretch border-t border-ink lg:border-l lg:border-t-0'>
-            <button type='button' :class="['flex-1 px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'DKK' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'DKK'">DK/DKK</button>
-            <button type='button' :class="['flex-1 border-l border-ink px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'EUR' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'EUR'">EN/EUR</button>
+          <div class='flex items-center border-t border-ink lg:border-l lg:border-t-0'>
+            <span class='mono-label hidden px-4 text-muted lg:inline'>Vis</span>
+            <button type='button' :class="['flex-1 self-stretch border-l border-ink px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'DKK' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'DKK'">DK/DKK</button>
+            <button type='button' :class="['flex-1 self-stretch border-l border-ink px-4 py-4 mono-label transition lg:flex-none lg:py-2.5', currency === 'EUR' ? 'bg-ink text-paper' : 'bg-paper hover:bg-ink hover:text-paper']" @click="currency = 'EUR'">EN/EUR</button>
           </div>
         </div>
 
@@ -92,7 +95,7 @@
             <span>{{ items.length ? 'Importér igen' : 'Importér CSV' }}</span>
             <input type='file' accept='.csv' @change='onFileChange' class='sr-only' />
           </label>
-          <button type='button' class='block w-full border-t border-ink bg-paper px-5 py-4 text-left mono-label active:bg-ink active:text-paper' @click='resetFilters'>Ryd filtre</button>
+          <button type='button' :disabled='!hasActiveFilters' class='block w-full border-t border-ink bg-paper px-5 py-4 text-left mono-label active:bg-ink active:text-paper disabled:text-muted disabled:opacity-50' @click='resetFilters'>Ryd filtre</button>
           <button type='button' class='block w-full border-t border-ink bg-paper px-5 py-4 text-left mono-label active:bg-ink active:text-paper' @click='toggleDark'>{{ isDark ? '☀ Lys tilstand' : '☾ Mørk tilstand' }}</button>
           <button v-if='cloudConfigured && userEmail' type='button' class='block w-full border-t border-ink bg-paper px-5 py-4 text-left mono-label active:bg-ink active:text-paper' @click='logout'>Log ud</button>
         </div>
@@ -483,6 +486,8 @@ export default defineComponent({
         return minOK && maxOK
       })
     })
+
+    const hasActiveFilters = computed(() => Boolean(searchText.value) || filterMin.value !== null || filterMax.value !== null)
 
     const pageCount = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / itemsPerPage)))
 
@@ -882,6 +887,7 @@ export default defineComponent({
       pageCount,
       pagedItems,
       filteredItems,
+      hasActiveFilters,
       selectedItem,
       selectItem,
       toggleExpand,
